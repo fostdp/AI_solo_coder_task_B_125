@@ -1,0 +1,100 @@
+.realtime-monitor-page {
+  .model-card {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .realtime-card {
+    .sensor-data-list {
+      .sensor-data-item {
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .sensor-type {
+          font-size: 13px;
+          color: #666;
+          margin-bottom: 4px;
+        }
+
+        .sensor-value {
+          .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-right: 4px;
+          }
+
+          .unit {
+            font-size: 12px;
+            color: #999;
+          }
+        }
+
+        .sensor-time {
+          font-size: 11px;
+          color: #bbb;
+          margin-top: 2px;
+        }
+      }
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 40px 0;
+      color: #ccc;
+    }
+  }
+
+  .vibration-control-card {
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .control-label {
+        width: 70px;
+        font-size: 13px;
+        color: #666;
+      }
+    }
+
+    .vibration-info {
+      background: #f5f5f5;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 13px;
+
+      p {
+        margin: 4px 0;
+        color: #666;
+      }
+    }
+  }
+
+  .overview-card {
+    .floor-overview-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .floor-label {
+        color: #666;
+        font-size: 13px;
+      }
+
+      .floor-value {
+        font-weight: 600;
+        color: #1a1a2e;
+      }
+    }
+  }
+}
