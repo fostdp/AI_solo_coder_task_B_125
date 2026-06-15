@@ -1,0 +1,174 @@
+version: "3.9"
+
+x-backend-common: &backend-common
+  build:
+    context: ./backend
+    dockerfile: Dockerfile
+  restart: unless-stopped
+  environment: &backend-env
+    DATABASE_URL: postgresql+asyncpg://postgres:postgres@timescaledb:5432/pagoda_monitor
+    TIMESCALEDB_URL: postgresql+psycopg2://postgres:postgres@timescaledb:5432/pagoda_monitor
+    REDIS_URL: redis://redis:6379/0
+    LOG_LEVEL: INFO
+    DEBUG: "false"
+  depends_on:
+    timescaledb:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  networks:
+    - pagoda-net
+
+services:
+  # ======== 基础设施 ========
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: pagoda-timescaledb
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pagoda_monitor
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescaledb-data:/var/lib/postgresql/data
+      - ./database/001_init_schema.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+      - ./database/002_retention_policy.sql:/docker-entrypoint-initdb.d/002_retention.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pagoda_monitor"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - pagoda-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: pagoda-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - pagoda-net
+
+  # ======== 微服务 ========
+  dtu-receiver:
+    <<: *backend-common
+    container_name: pagoda-dtu-receiver
+    build:
+      context: ./backend
+      dockerfile: services/dtu_receiver/Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      <<: *backend-env
+      DTU_RECEIVER_PORT: "8001"
+
+  fea-simulator:
+    <<: *backend-common
+    container_name: pagoda-fea-simulator
+    build:
+      context: ./backend
+      dockerfile: services/fea_simulator/Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      <<: *backend-env
+      FEA_SIMULATOR_PORT: "8002"
+
+  damage-detector:
+    <<: *backend-common
+    container_name: pagoda-damage-detector
+    build:
+      context: ./backend
+      dockerfile: services/damage_detector/Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      <<: *backend-env
+      DAMAGE_DETECTOR_PORT: "8003"
+
+  alarm-ws:
+    <<: *backend-common
+    container_name: pagoda-alarm-ws
+    build:
+      context: ./backend
+      dockerfile: services/alarm_ws/Dockerfile
+    ports:
+      - "8004:8004"
+    environment:
+      <<: *backend-env
+      ALARM_WS_PORT: "8004"
+
+  api-gateway:
+    <<: *backend-common
+    container_name: pagoda-api-gateway
+    build:
+      context: ./backend
+      dockerfile: services/api_gateway/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      <<: *backend-env
+      API_GATEWAY_PORT: "8000"
+    depends_on:
+      - dtu-receiver
+      - fea-simulator
+      - damage-detector
+      - alarm-ws
+
+  # ======== 前端 ========
+  frontend:
+    image: nginx:1.25-alpine
+    container_name: pagoda-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/gzip.conf:/etc/nginx/conf.d/gzip.conf:ro
+    depends_on:
+      - api-gateway
+    networks:
+      - pagoda-net
+
+  # ======== 传感器模拟器 ========
+  simulator:
+    <<: *backend-common
+    container_name: pagoda-simulator
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.simulator
+    restart: "no"
+    environment:
+      <<: *backend-env
+      SIMULATOR_API_URL: http://api-gateway:8000
+    depends_on:
+      - dtu-receiver
+      - api-gateway
+    command: >
+      python simulator.py
+      --api-url http://api-gateway:8000
+      --floors 5
+      --sensors-per-floor 8
+      --interval 60
+      --continuous
+
+networks:
+  pagoda-net:
+    driver: bridge
+
+volumes:
+  timescaledb-data:
+  redis-data:
