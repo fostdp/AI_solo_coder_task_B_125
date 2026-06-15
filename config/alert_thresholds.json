@@ -1,0 +1,55 @@
+{
+  "thresholds": {
+    "displacement_x": {
+      "warning_threshold": 2.0,
+      "critical_threshold": 5.0,
+      "unit": "mm",
+      "description": "X向位移峰值阈值"
+    },
+    "displacement_y": {
+      "warning_threshold": 2.0,
+      "critical_threshold": 5.0,
+      "unit": "mm",
+      "description": "Y向位移峰值阈值"
+    },
+    "acceleration": {
+      "warning_threshold": 0.05,
+      "critical_threshold": 0.1,
+      "unit": "g",
+      "description": "加速度峰值阈值"
+    },
+    "inter_story_drift_ratio": {
+      "warning_threshold": 0.002,
+      "critical_threshold": 0.004,
+      "unit": "1",
+      "description": "层间位移角阈值 - 1/500 1/250"
+    },
+    "temperature": {
+      "warning_threshold": 40.0,
+      "critical_threshold": 50.0,
+      "unit": "℃",
+      "description": "环境温度告警阈值"
+    },
+    "moisture_content": {
+      "warning_threshold": 18.0,
+      "critical_threshold": 25.0,
+      "unit": "%",
+      "description": "木材含水率阈值 - 腐朽风险"
+    },
+    "natural_frequency_drop": {
+      "warning_threshold": 0.03,
+      "critical_threshold": 0.05,
+      "unit": "%",
+      "description": "固有频率下降率阈值"
+    },
+    "sensor_offline_minutes": {
+      "warning_threshold": 30,
+      "critical_threshold": 60,
+      "unit": "minutes",
+      "description": "传感器离线时间阈值"
+    }
+  },
+  "check_interval_seconds": 300,
+  "alert_cooldown_seconds": 600,
+  "severity_levels": ["info", "warning", "critical"]
+}
