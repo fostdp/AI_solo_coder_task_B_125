@@ -1,0 +1,51 @@
+{
+  "model_name": "DamageDetectionNN_v2",
+  "description": "木塔损伤识别神经网络 - 基于模态参数变化",
+  "version": "2.0",
+  "input_features": 50,
+  "n_floors": 5,
+  "elements_per_floor": 3,
+  "hidden_dimensions": [256, 128, 64],
+  "dropout_rate": 0.3,
+  "activation": "ReLU",
+  "output_heads": {
+    "location": "Softmax",
+    "severity": "Sigmoid",
+    "confidence": "Sigmoid"
+  },
+  "use_data_augmentation": true,
+  "data_augmentation": {
+    "noise_level": 0.02,
+    "modal_perturbation_scale": 0.05,
+    "interpolation_factor": 3,
+    "frequency_scaling_range": [0.9, 1.1],
+    "damping_perturbation_scale": 0.1,
+    "amplitude_scaling_range": [0.8, 1.2],
+    "time_warping_scale": 0.1,
+    "augment_ratio": 5
+  },
+  "use_transfer_learning": false,
+  "transfer_learning": {
+    "pretrained_model_path": "models/pretrained_sim.pt",
+    "freeze_feature_extractor": true,
+    "unfreeze_layers": 2,
+    "mmd_loss_weight": 0.1,
+    "few_shot_samples": 10
+  },
+  "training": {
+    "batch_size": 32,
+    "learning_rate": 0.001,
+    "epochs": 200,
+    "optimizer": "Adam",
+    "weight_decay": 1e-5,
+    "early_stopping_patience": 20
+  },
+  "weights_file": "models/damage_detection_weights.pt",
+  "trained_on": "2026-01-15",
+  "accuracy_baseline": {
+    "accuracy": 0.897,
+    "precision": 0.873,
+    "recall": 0.851,
+    "f1_score": 0.862
+  }
+}
