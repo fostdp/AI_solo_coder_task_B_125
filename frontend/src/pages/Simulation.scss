@@ -1,0 +1,40 @@
+.simulation-page {
+  .config-card {
+    .ant-form-item-label {
+      label {
+        font-size: 12px;
+      }
+    }
+  }
+
+  .model-card {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .result-stat {
+    text-align: center;
+    padding: 16px;
+    background: #fafafa;
+    border-radius: 8px;
+
+    .stat-label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+
+      .unit {
+        font-size: 12px;
+        color: #999;
+        font-weight: normal;
+      }
+    }
+  }
+}
