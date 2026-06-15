@@ -1,0 +1,84 @@
+.alert-center {
+  padding: 24px;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      color: #1a237e;
+    }
+  }
+
+  .ant-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    &-head {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecef 100%);
+      border-bottom: 1px solid #e8e8e8;
+
+      &-title {
+        font-weight: 600;
+        color: #1a237e;
+      }
+    }
+  }
+
+  .ant-statistic {
+    &-title {
+      color: #666;
+      font-size: 14px;
+    }
+
+    &-content {
+      font-size: 28px;
+      font-weight: 600;
+    }
+  }
+
+  .ant-table {
+    &-thead > tr > th {
+      background: #fafafa;
+      font-weight: 600;
+    }
+
+    &-row {
+      &.alert-pending {
+        background: #fff1f0;
+      }
+
+      &.alert-critical {
+        background: #fff2e8;
+      }
+    }
+  }
+
+  .ant-form-inline {
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .ant-form-item {
+      margin-bottom: 8px;
+    }
+  }
+
+  .ant-drawer {
+    &-body {
+      padding: 24px;
+    }
+  }
+
+  .ant-descriptions {
+    &-item-label {
+      font-weight: 500;
+      background: #fafafa;
+      width: 140px;
+    }
+  }
+}
