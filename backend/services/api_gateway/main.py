@@ -153,6 +153,25 @@ async def proxy_modal_baseline():
     return await proxy_request("fea_simulator", "/api/modal-analysis/baseline")
 
 
+@app.api_route("/api/new/{path:path}", methods=["GET", "POST", "PUT", "DELETE"], summary="新功能模块路由代理(朝代对比/榫卯/倒塌/虚拟体验)")
+async def proxy_new_features(request: Request, path: str):
+    qs = str(request.query_params)
+    qs = f"?{qs}" if qs else ""
+    if request.method == "GET":
+        return await proxy_request("fea_simulator", f"/api/new/{path}{qs}")
+    else:
+        try:
+            body = await request.json()
+        except Exception:
+            body = None
+        return await proxy_request(
+            "fea_simulator",
+            f"/api/new/{path}{qs}",
+            method=request.method,
+            json_body=body
+        )
+
+
 @app.post("/api/damage/analyze", summary="提交损伤分析")
 async def proxy_damage_analyze(request: Request):
     body = await request.json()

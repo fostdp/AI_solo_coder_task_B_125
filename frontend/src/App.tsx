@@ -11,6 +11,10 @@ import DamageDetection from '@/pages/DamageDetection'
 import AlertCenter from '@/pages/AlertCenter'
 import DataAnalysis from '@/pages/DataAnalysis'
 import SystemSettings from '@/pages/SystemSettings'
+import DynastyCompare from '@/pages/DynastyCompare'
+import MortiseTenon from '@/pages/MortiseTenon'
+import CollapseSimulation from '@/pages/CollapseSimulation'
+import VirtualClimb from '@/pages/VirtualClimb'
 
 function App() {
   const isAuthenticated = useStore(state => state.isAuthenticated)
@@ -42,6 +46,10 @@ function App() {
         <Route path="alerts" element={<AlertCenter />} />
         <Route path="analysis" element={<DataAnalysis />} />
         <Route path="settings" element={<SystemSettings />} />
+        <Route path="dynasty-compare" element={<DynastyCompare />} />
+        <Route path="mortise-tenon" element={<MortiseTenon />} />
+        <Route path="collapse-simulation" element={<CollapseSimulation />} />
+        <Route path="virtual-climb" element={<VirtualClimb />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

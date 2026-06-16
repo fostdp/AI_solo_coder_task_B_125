@@ -9,7 +9,12 @@ import {
   SettingOutlined,
   UserOutlined,
   LogoutOutlined,
-  BellOutlined
+  BellOutlined,
+  DiffOutlined,
+  ApiOutlined,
+  ExperimentOutlined,
+  CrownOutlined,
+  FolderOpenOutlined
 } from '@ant-design/icons'
 import { useStore } from '@/store/useStore'
 import { wsService } from '@/services/websocket'
@@ -48,6 +53,28 @@ const menuItems: MenuProps['items'] = [
     key: '/analysis',
     icon: <BarChartOutlined />,
     label: '数据分析'
+  },
+  {
+    key: '/heritage-study',
+    icon: <FolderOpenOutlined />,
+    label: '遗产研究',
+    children: [
+      { key: '/dynasty-compare', icon: <DiffOutlined />, label: '中日木塔对比' },
+      { key: '/mortise-tenon', icon: <ApiOutlined />, label: '榫卯工艺复原' }
+    ]
+  },
+  {
+    key: '/extreme-analysis',
+    icon: <ExperimentOutlined />,
+    label: '极限分析',
+    children: [
+      { key: '/collapse-simulation', icon: <ThunderboltOutlined />, label: '地震倒塌模拟' }
+    ]
+  },
+  {
+    key: '/virtual-climb',
+    icon: <CrownOutlined />,
+    label: '虚拟登塔体验'
   },
   {
     key: '/settings',

@@ -27,6 +27,9 @@ from simulation.finite_element_solver import PagodaFEAModel
 from simulation.load_generator import WindLoadGenerator, EarthquakeLoadGenerator
 from simulation.timber_constitutive import TimberOrthotropicConstitutive
 
+from api.simulation_routes import router as simulation_router_v1
+from api.new_features_routes import router as new_features_router
+
 config = ServiceConfig.from_env("fea_simulator")
 config.port = 8002
 
@@ -345,6 +348,10 @@ async def get_baseline_modal():
         "mode_shapes": modal_results.mode_shapes if modal_results.mode_shapes else [],
         "source": "FEA_baseline"
     }
+
+
+app.include_router(simulation_router_v1)
+app.include_router(new_features_router)
 
 
 @app.get("/health", summary="健康检查")

@@ -1,0 +1,103 @@
+=== 启动本地测试服务 (127.0.0.1:8765)... ===
+
+==== 测试 API 路由前缀: /api/new ====
+
+[1/18] 朝代 - list_pagodas:
+  -> HTTP 200
+    木塔数: 2
+      - yingxian: 应县木塔 (中国)
+      - gojunoto: 法隆寺五重塔 (日本)
+
+[2/18] 朝代 - get_pagoda(yingxian):
+  -> HTTP 200
+    应县木塔 - 辽代 中国
+    结构: 高67.31m, 5层, 楼阁式木塔
+
+[3/18] 朝代 - compare (GET a=yingxian&b=gojunoto):
+  -> HTTP 200, status: success
+    title: 应县木塔 vs 法隆寺五重塔 古代木塔结构对比分析报告
+    频率(前3) a: [3.9709122800815146, 24.8870786182389, 69.69155068191759]
+    频率(前3) b: [5.903110784868159, 36.996833934637316, 103.60262716157723]
+    理念差异条数: 4
+
+[4/18] 朝代 - frequency_compare:
+  -> HTTP 200, ratio_a_to_b[:3]: [0.672681307330437, 0.6726813073304369, 0.6726813073304367]
+
+[5/18] 朝代 - wind_compare (30m/s):
+  -> HTTP 200
+    top_disp_a_mm: 0.20
+    top_disp_b_mm: 0.20
+    分析: 风速30.0m/s下，应县木塔顶点位移0.0002m，法隆寺五重塔顶点位移0.0...
+
+[6/18] 榫卯 - list_types:
+  -> HTTP 200
+    榫卯类型数: 6
+      - straight_tenon: straight_tenon μ=6.0
+      - dovetail_tenon: dovetail_tenon μ=6.25
+      - cross_tenon: cross_tenon μ=5.833333333333334
+      - through_tenon: through_tenon μ=6.222222222222223
+      - angle_brace_tenon: angle_brace_tenon μ=5.714285714285714
+      - bucket_arch_joint: bucket_arch_joint μ=6.666666666666667
+
+[7/18] 榫卯 - get_type(straight_tenon):
+  -> HTTP 200 -> straight_tenon, M_y=80000.0
+
+[8/18] 榫卯 - run_cyclic (max_rot=0.05, cycles=3):
+  -> HTTP 200, status: success
+    总步数: 720
+    M_min/max: -443038.0/443038.0
+    耗散能: 49211.5 J
+    等效阻尼比: 50.0%
+    刚度退化(末/初): 26.0%
+
+[9/18] 榫卯 - backbone(straight_tenon):
+  -> HTTP 200, 骨架点数: 100
+    屈服点 M=80000.0 θ=0.0050
+
+[10/18] 榫卯 - compare_joints (前3类):
+  -> HTTP 200, 对比项数: 3
+
+[11/18] 倒塌 - generate_motion (0.3g, 10s):
+  -> HTTP 200
+    步数: 1001, PGA=0.3g
+
+[12/18] 倒塌 - run_collapse (0.6g, 15s):
+  -> HTTP 200, status: success
+    倒塌模式: lower_floor_collapse
+    倒塌时间: 0.1s (None=未倒塌)
+    最大层间位移角: 1/1
+    性能水准: 倒塌 (COLLAPSE)
+
+[13/18] 倒塌 - evaluate_capacity:
+  -> HTTP 200, status: success
+    屈服PGA: 0.1g
+    极限PGA: 0.1g
+    超强系数Ω: 1.00
+    安全储备(vs8度0.16g): 0.62x
+
+[14/18] 虚拟登塔 - list_paths:
+  -> HTTP 200, 路径数: 1
+    路径: 朝圣之路, 航点数: 8
+
+[15/18] 虚拟登塔 - start_experience:
+  -> HTTP 200, status: success
+    会话ID: b81ea458-abab-40...
+
+[16/18] 虚拟登塔 - update (60s, 风15m/s, 震0.05g):
+  -> HTTP 200, status: success
+    位置: 塔顶观景台, Y=30.7m
+    风振: Δx=2.10mm, 舒适=无感
+    体感: 视觉1.0044101561330707mm / 听觉60.519308418795084dB
+
+[17/18] 虚拟登塔 - get_floor_info (3层):
+  -> HTTP 200
+    楼层: 三层暗层
+    建筑特色: 结构加固层，斜撑密布，增强整体刚度...
+
+[18/18] 虚拟登塔 - wind_response (30m, 风30m/s, 4层):
+  -> HTTP 200
+    位移: 7.59mm, 加速: 0.0527m/s2
+    舒适度: 有感
+
+
+========== [PASS] 全部 18 个 API 端点测试通过 ==========
