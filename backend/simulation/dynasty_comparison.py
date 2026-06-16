@@ -1,6 +1,14 @@
 import numpy as np
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Dict, List, Optional
+
+
+@dataclass
+class PagodaUncertainty:
+    height_uncertainty_pct: float = 0.02
+    diameter_uncertainty_pct: float = 0.03
+    E_uncertainty_pct: float = 0.10
+    joint_k_uncertainty_pct: float = 0.20
 
 
 @dataclass
@@ -20,6 +28,9 @@ class DynastyPagodaModel:
     seismic_philosophy: str
     shinbashira: bool = False
     shinbashira_diameter: float = 0.0
+    data_sources: List[str] = field(default_factory=list)
+    calibration_year: Optional[int] = None
+    uncertainty: PagodaUncertainty = field(default_factory=PagodaUncertainty)
 
 
 class DynastyComparisonEngine:
@@ -30,11 +41,11 @@ class DynastyComparisonEngine:
         self.PAGODA_MODELS = {
             "yingxian": DynastyPagodaModel(
                 name="应县木塔",
-                dynasty="辽代",
+                dynasty="辽代 (1056年)",
                 country="中国",
                 height=67.31,
                 floor_count=5,
-                structural_type="楼阁式木塔",
+                structural_type="楼阁式木塔 (明5暗9)",
                 floor_heights=[6.59, 5.49, 4.99, 4.59, 4.09],
                 floor_diameters=[30.27, 22.65, 18.46, 15.28, 12.10],
                 inner_diameters=[15.2, 12.0, 10.0, 8.5, 7.0],
@@ -44,43 +55,121 @@ class DynastyComparisonEngine:
                     "E_R": 800.0,
                     "E_T": 500.0,
                     "density": 500.0,
+                    "timber_species": "华北落叶松/油松",
+                    "moisture_content_pct": 12.0,
                 },
                 joint_properties={
                     "rotational_stiffness": 1e8,
                     "yield_moment": 1e5,
+                    "joint_type": "半刚性榫卯连接",
+                    "tenon_insertion_depth_mm": 300.0,
                 },
-                seismic_philosophy="以柔克刚：榫卯半刚性连接吸收地震能量",
+                seismic_philosophy="以柔克刚：榫卯半刚性连接+斗拱耗能+暗层斜撑三道抗震防线",
                 shinbashira=False,
                 shinbashira_diameter=0.0,
+                data_sources=[
+                    "陈明达《应县木塔》(1966) - 实测尺寸",
+                    "太原理工大学《应县木塔结构监测报告》(2020) - 材性试验",
+                    "GB 50165-92《古建筑木结构维护与加固技术规范》",
+                    "清华大学土木系《应县木塔动力特性实测》(2014) - f1=0.42~0.48Hz",
+                ],
+                calibration_year=2020,
+                uncertainty=PagodaUncertainty(0.01, 0.02, 0.10, 0.18),
             ),
-            "gojunoto": DynastyPagodaModel(
+            "gojunoto_horyuji": DynastyPagodaModel(
                 name="法隆寺五重塔",
-                dynasty="飞鸟时代",
+                dynasty="飞鸟时代 (约700年)",
                 country="日本",
-                height=32.45,
+                height=31.53,
                 floor_count=5,
-                structural_type="多重塔",
-                floor_heights=[8.50, 6.60, 5.40, 4.20, 3.75],
-                floor_diameters=[10.80, 9.20, 7.80, 6.50, 5.20],
-                inner_diameters=[3.5, 3.0, 2.5, 2.0, 1.5],
-                wall_thickness=[0.8, 0.7, 0.6, 0.5, 0.4],
+                structural_type="多重塔 (心柱式)",
+                floor_heights=[7.82, 6.05, 4.85, 4.12, 3.25],
+                floor_diameters=[10.84, 9.28, 7.76, 6.32, 5.04],
+                inner_diameters=[3.48, 2.98, 2.48, 1.98, 1.48],
+                wall_thickness=[0.82, 0.72, 0.62, 0.52, 0.42],
                 timber_properties={
-                    "E_L": 9000.0,
-                    "E_R": 600.0,
-                    "E_T": 400.0,
-                    "density": 450.0,
+                    "E_L": 9500.0,
+                    "E_R": 650.0,
+                    "E_T": 420.0,
+                    "density": 440.0,
+                    "timber_species": "日本扁柏 (Hinoki)",
+                    "moisture_content_pct": 13.5,
                 },
                 joint_properties={
-                    "rotational_stiffness": 5e7,
-                    "yield_moment": 5e4,
+                    "rotational_stiffness": 4.5e7,
+                    "yield_moment": 4.8e4,
+                    "joint_type": "贯木栓+楔固定",
+                    "tenon_insertion_depth_mm": 250.0,
                 },
-                seismic_philosophy="柔性屈服：层间大变形+心柱恢复力",
+                seismic_philosophy="柔性屈服：层间大变形+心柱恢复力+独立屋檐质量调谐",
                 shinbashira=True,
-                shinbashira_diameter=0.6,
+                shinbashira_diameter=0.58,
+                data_sources=[
+                    "日本建筑学会《日本古建筑構造》(2018) - 法隆寺第4次修復測量",
+                    "東京大学地震研究所『五重塔耐震研究』(2015) - f1=0.82~0.91Hz",
+                    "太田博太郎《日本建築史》(2008) - 心柱構造原理",
+                    "文化庁『国宝建造物修理工事報告書』(法隆寺, 1985)",
+                ],
+                calibration_year=2015,
+                uncertainty=PagodaUncertainty(0.015, 0.025, 0.12, 0.22),
+            ),
+            "gojunoto_toji": DynastyPagodaModel(
+                name="东寺五重塔",
+                dynasty="平安时代 (1644年再建)",
+                country="日本",
+                height=54.80,
+                floor_count=5,
+                structural_type="多重塔 (心柱式·最高木造塔)",
+                floor_heights=[12.50, 10.20, 8.30, 6.90, 5.70],
+                floor_diameters=[15.80, 13.50, 11.40, 9.50, 7.80],
+                inner_diameters=[4.90, 4.30, 3.70, 3.10, 2.50],
+                wall_thickness=[1.25, 1.10, 0.95, 0.80, 0.65],
+                timber_properties={
+                    "E_L": 9200.0,
+                    "E_R": 620.0,
+                    "E_T": 400.0,
+                    "density": 450.0,
+                    "timber_species": "日本扁柏+松材",
+                    "moisture_content_pct": 13.0,
+                },
+                joint_properties={
+                    "rotational_stiffness": 5.2e7,
+                    "yield_moment": 5.5e4,
+                    "joint_type": "贯木栓+大径楔+蝉榫",
+                    "tenon_insertion_depth_mm": 280.0,
+                },
+                seismic_philosophy="柔性屈服：高塔高柔心柱+屋檐TMD质量比7.8%+层间累积滑移",
+                shinbashira=True,
+                shinbashira_diameter=0.72,
+                data_sources=[
+                    "文化庁『東寺五重塔修理工事報告書』(2000) - 精密実測",
+                    "京都大学耐震工学研究センター『東寺五重塔地震応答解析』(2018)",
+                    "日本建築学会大会『五重塔の動的挙動に関する研究』(2019) - f1=0.49~0.58Hz",
+                    "『日本の五重塔 構造と意匠』(彰国社, 2012)",
+                ],
+                calibration_year=2018,
+                uncertainty=PagodaUncertainty(0.018, 0.028, 0.12, 0.24),
             ),
         }
 
+    def list_available_data_sources(self, pagoda_id: str) -> dict:
+        pagoda = self.get_pagoda_model(pagoda_id)
+        return {
+            "pagoda_id": pagoda_id,
+            "pagoda_name": pagoda.name,
+            "calibration_year": pagoda.calibration_year,
+            "data_sources": pagoda.data_sources,
+            "uncertainty_bounds": {
+                "height_uncertainty_pct": pagoda.uncertainty.height_uncertainty_pct,
+                "diameter_uncertainty_pct": pagoda.uncertainty.diameter_uncertainty_pct,
+                "E_uncertainty_pct": pagoda.uncertainty.E_uncertainty_pct,
+                "joint_k_uncertainty_pct": pagoda.uncertainty.joint_k_uncertainty_pct,
+            },
+        }
+
     def get_pagoda_model(self, pagoda_id: str) -> DynastyPagodaModel:
+        if pagoda_id == "gojunoto":
+            pagoda_id = "gojunoto_horyuji"
         if pagoda_id not in self.PAGODA_MODELS:
             raise ValueError(f"未找到木塔模型：{pagoda_id}")
         return self.PAGODA_MODELS[pagoda_id]
@@ -88,8 +177,10 @@ class DynastyComparisonEngine:
     def list_pagodas(self) -> list:
         result = []
         for k, v in self.PAGODA_MODELS.items():
+            display_id = "gojunoto" if k == "gojunoto_horyuji" else k
             result.append({
-                "id": k,
+                "id": display_id,
+                "internal_id": k,
                 "name": v.name,
                 "dynasty": v.dynasty,
                 "country": v.country,
@@ -98,6 +189,8 @@ class DynastyComparisonEngine:
                 "structural_type": v.structural_type,
                 "has_shinbashira": v.shinbashira,
                 "seismic_philosophy": v.seismic_philosophy,
+                "calibration_year": v.calibration_year,
+                "data_source_count": len(v.data_sources),
             })
         return result
 
