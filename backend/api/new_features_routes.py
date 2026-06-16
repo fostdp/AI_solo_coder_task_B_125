@@ -4,17 +4,25 @@ from pydantic import BaseModel, Field
 
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from simulation.dynasty_comparison import DynastyComparisonEngine
-from simulation.mortise_tenon import MortiseTenonSimulator
-from simulation.collapse_simulator import CollapseSimulator
-from simulation.virtual_experience import VirtualExperienceService
+from design_comparator import PagodaDesignComparator
+from joinery_simulator import JoinerySimulator
+from collapse_simulator import CollapseSimulator, CollapseWorkerPool, get_global_worker_pool
+from vr_pagoda_experience import VRPagodaExperienceService
 
 router = APIRouter(prefix="/api/new", tags=["新功能扩展"])
 
-dynasty_engine = DynastyComparisonEngine()
-mortise_simulator = MortiseTenonSimulator()
+dynasty_engine = PagodaDesignComparator()
+mortise_simulator = JoinerySimulator()
 collapse_simulator = CollapseSimulator()
-virtual_service = VirtualExperienceService()
+virtual_service = VRPagodaExperienceService()
+_worker_pool: Optional[CollapseWorkerPool] = None
+
+
+def get_worker_pool() -> CollapseWorkerPool:
+    global _worker_pool
+    if _worker_pool is None:
+        _worker_pool = CollapseWorkerPool(max_workers=2)
+    return _worker_pool
 
 @router.get("/dynasty/pagodas", summary="获取所有朝代木塔模型列表")
 async def list_pagodas():
@@ -224,3 +232,106 @@ async def list_paths():
          "total_duration_minutes": 10,
          "waypoint_count": 8}
     ]}
+
+
+# ========== 新增：Worker进程异步接口 ==========
+
+class CollapseWorkerRequest(BaseModel):
+    earthquake_pga: float = Field(0.4, ge=0.05, le=3.0)
+    duration: float = Field(30.0, ge=5.0, le=120.0)
+    time_step: float = Field(0.01, ge=0.005, le=0.1)
+
+
+@router.post("/collapse/worker/submit", summary="提交Worker异步倒塌模拟任务")
+async def submit_collapse_worker(req: CollapseWorkerRequest):
+    try:
+        pool = get_worker_pool()
+        future = pool.submit_collapse_simulation(
+            req.earthquake_pga, req.duration, req.time_step
+        )
+        return {"status": "submitted", "task_id": id(future)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/collapse/worker/run_sync", summary="同步运行Worker倒塌模拟（阻塞）")
+async def run_collapse_worker_sync(req: CollapseWorkerRequest):
+    try:
+        pool = get_worker_pool()
+        result = pool.run_collapse_in_worker(
+            req.earthquake_pga, req.duration, req.time_step
+        )
+        return {"status": "success", "result": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class CapacityWorkerRequest(BaseModel):
+    start_pga: float = 0.2
+    end_pga: float = 1.5
+    pga_step: float = 0.1
+    early_stop: bool = True
+
+
+@router.post("/collapse/worker/evaluate_sync", summary="同步运行Worker极限承载力评估（阻塞）")
+async def evaluate_capacity_worker_sync(req: CapacityWorkerRequest):
+    try:
+        pool = get_worker_pool()
+        result = pool.run_capacity_in_worker(
+            req.start_pga, req.end_pga, req.pga_step, req.early_stop
+        )
+        return {"status": "success", "result": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class BatchSweepRequest(BaseModel):
+    pga_values: List[float] = Field([0.2, 0.4, 0.6, 0.8, 1.0])
+    duration: float = 30.0
+    time_step: float = 0.02
+
+
+@router.post("/collapse/worker/batch_sweep", summary="批量参数扫描（多Worker并行）")
+async def batch_param_sweep(req: BatchSweepRequest):
+    try:
+        pool = get_worker_pool()
+        results = pool.run_batch_sweep_sync(
+            pga_values=req.pga_values,
+            duration=req.duration,
+            time_step=req.time_step,
+        )
+        return {"status": "success", "results": results, "count": len(results)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/collapse/worker/status", summary="获取Worker池状态")
+async def worker_status():
+    pool = get_worker_pool()
+    return {
+        "max_workers": pool.max_workers,
+        "pool_initialized": pool._executor is not None,
+    }
+
+
+# ========== 新增：防眩晕系统(AMS)接口 ==========
+
+@router.get("/virtual/comfort_presets", summary="获取4级舒适预设列表")
+async def comfort_presets():
+    return virtual_service.get_comfort_presets()
+
+
+@router.post("/virtual/set_comfort_mode", summary="设置会话舒适模式（防眩晕等级）")
+async def set_comfort_mode(session_id: str, mode: str = "standard"):
+    result = virtual_service.set_session_comfort_mode(session_id, mode)
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
+
+
+@router.get("/virtual/ams_status", summary="获取会话防眩晕系统状态")
+async def ams_status(session_id: str):
+    result = virtual_service.get_session_ams_config(session_id)
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
